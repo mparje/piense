@@ -2,8 +2,29 @@ import streamlit as st
 import whisper
 import openai
 import streamlit_webrtc as webrtc
-openai.api_key = "TU_API_KEY_DE_OPENAI_AQUI"  # Reemplaza esto con tu propia clave API de OpenAI
 model_engine = "text-davinci-003"
+
+api_key = st.sidebar.text_input("Ingrese su clave de la API de OpenAI", type="password")
+
+if not api_key:
+    st.warning("Por favor ingrese una clave de API válida para continuar.")
+else:
+    openai.api_key = api_key
+    # Continuar con el resto del código que utiliza la clave de API
+
+
+st.title("Piense en voz alta")
+
+# Añadir título e instrucciones en la columna izquierda
+st.sidebar.title("Instrucciones")
+st.sidebar.markdown("""
+1. Suba un archivo de audio (wav o mp3) o grabe hasta 3 minutos. 
+2. Para iniciar o detener la grabación, haga clic en el icono .
+3. Espere a que cargue el archivo o a que se procese la grabación.
+4. Transcriba.
+5. No reconoce archivos .m4a (Mac).
+- Por Moris Polanco, a partir de leopoldpoldus.
+""")
 
 # Crear la página de Streamlit
 def main():
