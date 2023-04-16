@@ -1,7 +1,7 @@
 import streamlit as st
 import openai
 import requests
-
+import json
 
 api_key = st.sidebar.text_input("Ingrese su clave de la API de OpenAI", type="password")
 
