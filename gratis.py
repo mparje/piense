@@ -31,16 +31,18 @@ def main():
     st.title("Transcripción y ordenamiento de notas de voz")
     
     # Agregar la opción para grabar audio en la web
-    webrtc_stream = webrtc.AudioRecorder(
-        device=webrtc.RecordingDevice.DEFAULT,
-        sample_rate=16000,
-        channels=1,
+    webrtc_stream = webrtc.webrtc_streamer(
+        key="audio",
+        mode=webrtc.WebRtcMode.SENDRECV,
+        audio_receiver_size=1024,
+        video_receiver_size="640x480",
+        client_settings={"default_mute": True},
     )
     recording = st.checkbox("Comenzar a grabar")
     if recording:
-        webrtc_stream.recording = True
+        webrtc_stream.start_recording()
     else:
-        webrtc_stream.recording = False
+        webrtc_stream.stop_recording()
     
     # Si se graba el audio, transcribirlo usando Whisper
     if webrtc_stream.audio_bytes:
