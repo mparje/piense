@@ -1,5 +1,4 @@
-streamlit 
-whisper 
+streamlit
 openai
 requests
 json
