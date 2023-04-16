@@ -26,6 +26,13 @@ st.sidebar.markdown("""
 - Por Moris Polanco, a partir de leopoldpoldus.
 """)
 
+import streamlit as st
+import whisper
+import openai
+import streamlit_webrtc as webrtc
+openai.api_key = "TU_API_KEY_DE_OPENAI_AQUI"  # Reemplaza esto con tu propia clave API de OpenAI
+model_engine = "text-davinci-003"
+
 # Crear la página de Streamlit
 def main():
     st.title("Transcripción y ordenamiento de notas de voz")
@@ -42,7 +49,7 @@ def main():
     if recording:
         webrtc_stream.start_recording()
     else:
-        webrtc_stream.stop_recording()
+        webrtc_stream.stop()
     
     # Si se graba el audio, transcribirlo usando Whisper
     if webrtc_stream.audio_bytes:
