@@ -30,6 +30,7 @@ def transcribe_audio(audio_file):
     transcribed_text = response.content.decode("utf-8")
     transcribed_text = json.loads(transcribed_text)["transcription"]
 
+
     return transcribed_text
 
 # Función para ordenar notas usando text-davinci-003
