@@ -61,3 +61,4 @@ if uploaded_file is not None:
 
     sorted_notes = sort_notes(transcribed_text)
     st.write("Notas ordenadas:", sorted_notes)
+ 
