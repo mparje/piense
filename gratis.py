@@ -28,7 +28,8 @@ def transcribe_audio(audio_file):
 
     # Extraer el texto transcrito de la respuesta
     transcribed_text = response.content.decode("utf-8")
-    transcribed_text = json.loads(transcribed_text)["transcription"]
+    transcribed_text = json.loads(transcribed_text.decode('utf-8'))["transcription"]
+
 
     return transcribed_text
 
