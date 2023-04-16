@@ -11,13 +11,6 @@ else:
     openai.api_key = api_key
     # Continuar con el resto del código que utiliza la clave de API
 
-import streamlit as st
-import openai
-import requests
-
-# Configurar la API key de OpenAI
-openai.api_key = "su_api_key"
-
 # Función para transcribir audio usando Whisper
 def transcribe_audio(audio_file):
     # Cargar el archivo de audio en memoria
