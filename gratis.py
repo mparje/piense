@@ -1,7 +1,6 @@
 import streamlit as st
 import openai
 import requests
-import json
 
 
 api_key = st.sidebar.text_input("Ingrese su clave de la API de OpenAI", type="password")
@@ -11,6 +10,13 @@ if not api_key:
 else:
     openai.api_key = api_key
     # Continuar con el resto del código que utiliza la clave de API
+
+import streamlit as st
+import openai
+import requests
+
+# Configurar la API key de OpenAI
+openai.api_key = "su_api_key"
 
 # Función para transcribir audio usando Whisper
 def transcribe_audio(audio_file):
@@ -28,7 +34,8 @@ def transcribe_audio(audio_file):
     )
 
     # Extraer el texto transcrito de la respuesta
-    transcribed_text = response.json()["transcription"]
+    transcribed_text = response.content.decode("utf-8")
+    transcribed_text = json.loads(transcribed_text)["transcription"]
 
     return transcribed_text
 
@@ -60,4 +67,3 @@ if uploaded_file is not None:
 
     sorted_notes = sort_notes(transcribed_text)
     st.write("Notas ordenadas:", sorted_notes)
-
