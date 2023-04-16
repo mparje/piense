@@ -1,9 +1,8 @@
 import streamlit as st
-import whisper
 import openai
-import json
 import requests
-model_engine = "text-davinci-003"
+import json
+
 
 api_key = st.sidebar.text_input("Ingrese su clave de la API de OpenAI", type="password")
 
