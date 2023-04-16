@@ -3,13 +3,13 @@ import openai
 import requests
 import json
 
+# Configurar la clave de la API de OpenAI
 api_key = st.sidebar.text_input("Ingrese su clave de la API de OpenAI", type="password")
 
 if not api_key:
     st.warning("Por favor ingrese una clave de API válida para continuar.")
 else:
     openai.api_key = api_key
-    # Continuar con el resto del código que utiliza la clave de API
 
 # Función para transcribir audio usando Whisper
 def transcribe_audio(audio_file):
@@ -29,8 +29,6 @@ def transcribe_audio(audio_file):
     # Extraer el texto transcrito de la respuesta
     transcribed_text = response.content.decode("utf-8")
     transcribed_text = json.loads(transcribed_text)["transcription"]
-
-
 
     return transcribed_text
 
@@ -62,4 +60,3 @@ if uploaded_file is not None:
 
     sorted_notes = sort_notes(transcribed_text)
     st.write("Notas ordenadas:", sorted_notes)
- 
