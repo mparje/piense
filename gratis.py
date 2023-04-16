@@ -13,19 +13,6 @@ else:
     # Continuar con el resto del código que utiliza la clave de API
 
 
-st.title("Piense en voz alta")
-
-# Añadir título e instrucciones en la columna izquierda
-st.sidebar.title("Instrucciones")
-st.sidebar.markdown("""
-1. Suba un archivo de audio (wav o mp3) o grabe hasta 3 minutos. 
-2. Para iniciar o detener la grabación, haga clic en el icono .
-3. Espere a que cargue el archivo o a que se procese la grabación.
-4. Transcriba.
-5. No reconoce archivos .m4a (Mac).
-- Por Moris Polanco, a partir de leopoldpoldus.
-""")
-
 import streamlit as st
 import whisper
 import openai
@@ -49,7 +36,7 @@ def main():
     if recording:
         webrtc_stream.start_recording()
     else:
-        webrtc_stream.stop()
+        webrtc_stream.stop_recording()
     
     # Si se graba el audio, transcribirlo usando Whisper
     if webrtc_stream.audio_bytes:
