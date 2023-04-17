@@ -1,7 +1,7 @@
 import streamlit as st
 import openai
 import requests
-import json
+import base64
 
 # Configurar la clave de la API de OpenAI
 api_key = st.sidebar.text_input("Ingrese su clave de la API de OpenAI", type="password")
@@ -11,53 +11,95 @@ if not api_key:
 else:
     openai.api_key = api_key
 
-# Función para transcribir audio usando Whisper
+
+# Configuración de la página
+st.set_page_config(
+    page_title="Grabador y ordenador de notas de voz",
+    page_icon=":microphone:",
+    layout="wide"
+)
+
+# Título de la página
+st.title("Grabador y ordenador de notas de voz")
+
+# Función para transcribir con Whisper
 def transcribe_audio(audio_file):
-    # Cargar el archivo de audio en memoria
+    # URL de la API de Whisper
+    url = "https://api.openai.com/v1/speech/transcriptions"
+
+    # Carga el archivo de audio
     audio_data = audio_file.read()
 
-    # Realizar una solicitud a la API de OpenAI para transcribir el audio
-    response = requests.post(
-        "https://api.openai.com/v1/engines/whisper-asr/deployed/transcribe",
-        headers={
-            "Content-Type": "audio/wav",
-            "Authorization": f"Bearer {openai.api_key}",
-        },
-        data=audio_data,
-    )
+    # Codifica el archivo de audio en base64
+    encoded_audio = base64.b64encode(audio_data).decode("utf-8")
 
-    # Extraer el texto transcrito de la respuesta
-    transcribed_text = response.content.decode("utf-8")
-    transcribed_text = json.loads(transcribed_text)["transcription"]
+    # Parámetros de la solicitud HTTP
+    headers = {"Content-Type": "application/json"}
+    data = {
+        "model": "whisper-2021-10-05",
+        "audio": encoded_audio
+    }
 
+    # Realiza la solicitud HTTP y obtiene la respuesta
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+
+    # Decodifica la respuesta y obtiene la transcripción
+    transcribed_text = json.loads(response.text)["text"]
 
     return transcribed_text
 
-# Función para ordenar notas usando text-davinci-003
-def sort_notes(transcribed_text):
-    prompt = f"Ordena las siguientes notas de manera coherente:\n{transcribed_text}\n"
+# Función para ordenar con Text-Davinci-003
+def order_text(text):
+    # URL de la API de Text-Davinci-003
+    url = "https://api.openai.com/v1/engines/text-davinci-003/completions"
 
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=prompt,
-        max_tokens=150,
-        n=1,
-        stop=None,
-        temperature=0.5,
+    # Parámetros de la solicitud HTTP
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {API_KEY}"}
+    data = {
+        "prompt": text,
+        "temperature": 0.5,
+        "max_tokens": 1024,
+        "n": 1,
+        "stop": "\n"
+    }
+
+    # Realiza la solicitud HTTP y obtiene la respuesta
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+
+    # Decodifica la respuesta y obtiene la ordenación
+    ordered_text = json.loads(response.text)["choices"][0]["text"]
+
+    return ordered_text
+
+# Interfaz de la aplicación
+with st.sidebar:
+    # Botón para grabar audio
+    st.warning("Haga clic en el botón 'Grabar' para empezar a grabar")
+    record_button = st.button("Grabar")
+
+    # Botón para transcribir y ordenar
+    st.warning("Haga clic en el botón 'Transcribir y ordenar' para generar las notas de voz")
+    transcribe_button = st.button("Transcribir y ordenar")
+
+# Grabación de audio
+if record_button:
+    # Configuración de la grabación de audio
+    audio_bytes = st.audio_recorder(
+        "Grabando audio",
+        format="wav",
+        start_recording=record_button,
+        stop_recording=transcribe_button,
+        key="audio"
     )
 
-    sorted_notes = response.choices[0].text.strip()
+# Transcripción y ordenación de texto
+if transcribe_button:
+    # Transcripción con Whisper
+    transcribed_text = transcribe_audio(audio_bytes)
 
-    return sorted_notes
+    # Ordenación con Text-Davinci-003
+    ordered_text = order_text(transcribed_text)
 
-# Diseño de la interfaz de usuario de Streamlit
-st.title("Transcriptor y organizador de notas")
-
-uploaded_file = st.file_uploader("Suba su archivo de audio", type=["wav", "mp3"])
-
-if uploaded_file is not None:
-    transcribed_text = transcribe_audio(uploaded_file)
-    st.write("Texto transcrito:", transcribed_text)
-
-    sorted_notes = sort_notes(transcribed_text)
-    st.write("Notas ordenadas:", sorted_notes)
+    # Muestra el resultado
+    st.subheader("Notas de voz ordenadas")
+    st.write(ordered_text)
