@@ -2,4 +2,3 @@ streamlit
 soundfile
 pyaudio
 speechrecognition
-whisper
