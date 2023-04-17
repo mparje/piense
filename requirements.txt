@@ -1,4 +1,4 @@
-streamlit
-openai
-pydub
-avprobe
+streamlit==0.87.0
+openai==0.10.2
+requests==2.26.0
+pydub==0.25.1
