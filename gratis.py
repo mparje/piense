@@ -1,7 +1,10 @@
+from io import BytesIO
+import numpy as np
+import soundfile as sf
+import speech_recognition as sr
+import whisper
+import sys
 import streamlit as st
-import openai
-import pyaudio
-import wave
 
 # Configurar la clave de la API de OpenAI
 api_key = st.sidebar.text_input("Ingrese su clave de la API de OpenAI", type="password")
@@ -16,49 +19,21 @@ else:
 
 
 
+device = 2
+model = whisper.load_model("small")
+recognizer = sr.Recognizer()
 
-def record_voice():
-    st.write("Presione el botón de abajo para comenzar a grabar")
-    audio = pyaudio.PyAudio()
-    stream = audio.open(format=pyaudio.paInt16, channels=1, rate=44100, input=True, frames_per_buffer=1024)
+st.title("Transcripción de Voz con OpenAI y Streamlit")
 
-    frames = []
-    try:
-        while True:
-            data = stream.read(1024)
-            frames.append(data)
-    except KeyboardInterrupt:
-        pass
+while True:
+    st.write("Habla en el micrófono para empezar a transcribir:")
+    with sr.Microphone(device_index=device, sample_rate=16_000) as source:
+        audio = recognizer.listen(source)
 
-    stream.stop_stream()
-    stream.close()
-    audio.terminate()
+    wav_bytes = audio.get_wav_data()
+    wav_stream = BytesIO(wav_bytes)
+    audio_array, sampling_rate = sf.read(wav_stream)
+    audio_fp32 = audio_array.astype(np.float32)
 
-    sound_file = wave.open("Recording.wav", "wb")
-
-    sound_file.setnchannels(1)
-    sound_file.setsampwidth(audio.get_sample_size(pyaudio.paInt16))
-    sound_file.setframerate(44100)
-    sound_file.writeframes(b''.join(frames))
-    sound_file.close()
-    st.write("¡La grabación ha finalizado!")
-
-
-def get_voice():
-    st.write("Presione el botón de abajo para transcribir la grabación")
-    openai.api_key = "API-KEY"
-    audio_file = open("Recording.wav", "rb")
-    transcript = openai.Audio.transcribe("whisper-1", audio_file)
-    st.write("Transcripción de la grabación:")
-    st.write(transcript)
-
-
-# UI
-st.title("Transcripción de Voz")
-
-option = st.sidebar.selectbox("Seleccione una opción", ("Grabar voz", "Transcribir voz"))
-
-if option == "Grabar voz":
-    record_voice()
-elif option == "Transcribir voz":
-    get_voice()
+    result = model.transcribe(audio_fp32, fp16=False)
+    st.write(f"Transcripción: {result['text']}")
