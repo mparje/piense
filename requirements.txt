@@ -3,3 +3,4 @@ soundfile
 openai
 pyaudio
 speechrecognition
+numpy
