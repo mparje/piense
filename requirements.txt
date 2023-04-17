@@ -1,4 +1,5 @@
-streamlit 
-openai 
-pyaudio 
-wave
+streamlit
+soundfile
+pyaudio
+speechrecognition
+whisper
