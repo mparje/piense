@@ -1,4 +1,5 @@
 streamlit
 soundfile
+openai
 pyaudio
 speechrecognition
