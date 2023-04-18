@@ -2,9 +2,10 @@ import streamlit as st
 import openai
 import requests
 from io import BytesIO
+import os
 
 # Set OpenAI API key
-openai.api_key = "YOUR_API_KEY"
+openai.api_key = os.getenv("YOUR_API_KEY")
 
 # Set Streamlit app title and description
 st.set_page_config(page_title="Voice-to-Text and Text Generation", page_icon=":microphone:", layout="wide")
