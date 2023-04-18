@@ -4,10 +4,18 @@ import speech_recognition as sr
 import whisper
 import json 
 import streamlit as st
-import os
 
-# openai
-openai.api_key = os.getenv("API_KEY")
+
+
+# Configurar la clave de la API de OpenAI
+api_key = st.sidebar.text_input("Ingrese su clave de la API de OpenAI", type="password")
+
+if not api_key:
+    st.warning("Por favor ingrese una clave de API válida para continuar.")
+else:
+    openai.api_key = api_key
+    # Continuar con el resto del código que utiliza la clave de API
+
 model = whisper.load_model('base')
 engine = pyttsx3.init()
 
