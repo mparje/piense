@@ -1,5 +1,6 @@
-streamlit
+pytest
 openai
-SpeechRecognition
 pyttsx3
-whisper
+SpeechRecognition
+git+https://github.com/openai/whisper.git
+pyaudio
