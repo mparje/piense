@@ -1,69 +1,83 @@
-import streamlit as st
 import openai
-import requests
-from io import BytesIO
+import pyttsx3
+import speech_recognition as sr
+import whisper
+import json 
+import streamlit as st
 import os
 
-# Set OpenAI API key
-openai.api_key = os.getenv("YOUR_API_KEY")
+# openai
+openai.api_key = os.getenv("API_KEY")
+model = whisper.load_model('base')
+engine = pyttsx3.init()
 
-# Set Streamlit app title and description
-st.set_page_config(page_title="Voice-to-Text and Text Generation", page_icon=":microphone:", layout="wide")
-st.title("Voice-to-Text and Text Generation")
-st.write("This app transcribes your voice and generates a well-written text based on your transcription.")
+# set engine
+engine.setProperty('voice', 'com.apple.speech.synthesis.voice.Alex')
 
-# Create a file uploader for audio files
-uploaded_file = st.file_uploader("Upload an audio file (.wav or .mp3)", type=["wav", "mp3"])
+r = sr.Recognizer()
+mic = sr.Microphone(device_index=2)
 
-# Create a text input for prompt
-prompt = st.text_input("Enter a prompt for the text generation:")
 
-# Define a function to transcribe voice using Whisper API
-def transcribe_voice(audio_file):
-    response = requests.post(
-        "https://api.openai.com/v1/whisper/recognize",
-        headers={"Authorization": f"Bearer {openai.api_key}"},
-        data=audio_file,
-    )
-    if response.ok:
-        return response.json()["text"]
+def run_bot():
+    conversation = ""
+    user_name = "Ayla"
+    bot_name = "Bot"
+
+    while st.session_state.conversation_running:
+        with mic as source:
+            st.write("\nlistening...")
+            r.adjust_for_ambient_noise(source, duration=0.2)
+            audio = r.listen(source)
+            with open('output.wav', 'wb') as f:
+                f.write(audio.get_wav_data())
+        st.write("no longer listening.\n")
+        
+        try:
+            output = model.transcribe('output.wav', fp16=False)
+            user_input = output['text']
+            st.write("user input : " + user_input)
+        except Exception as e :
+            st.write(e)
+            continue
+        
+        prompt = user_name + ": " + user_input + "\n" + bot_name+ ": "
+        
+        conversation += prompt
+        
+        response = openai.Completion.create(
+                engine = "text-davinci-003",
+                prompt = conversation,
+                max_tokens = 1024,
+                n = 1,
+                stop=[user_name+":"],
+                temperature=0.2,
+            )
+        response_str = response["choices"][0]["text"].replace("\n", "")
+        response_str = response_str.split(user_name + ": ", 1)[0].split(bot_name + ": ", 1)[0]
+        
+        conversation += response_str + "\n"
+        st.write(response_str)
+        
+        engine.say(response_str)
+        engine.runAndWait()
+
+
+def main():
+    st.title("Voice-based chatbot")
+    st.write("Press the start button to begin the conversation.")
+    
+    if "conversation_running" not in st.session_state:
+        st.session_state.conversation_running = False
+
+    if not st.session_state.conversation_running:
+        if st.button("Start"):
+            st.session_state.conversation_running = True
+            run_bot()
     else:
-        return None
+        if st.button("Stop"):
+            st.session_state.conversation_running = False
+            engine.stop()
 
-# Define a function to generate text using GPT-3
-def generate_text(prompt):
-    response = openai.Completion.create(
-        engine="text-davinci-002",
-        prompt=prompt,
-        max_tokens=100,
-        n=1,
-        stop=None,
-        temperature=0.5,
-    )
-    if response.choices:
-        return response.choices[0].text
-    else:
-        return None
 
-# Create a button to start transcription and text generation
-if st.button("Generate Text"):
-    # Check if audio file and prompt are provided
-    if uploaded_file and prompt:
-        # Transcribe voice using Whisper API
-        st.write("Transcribing your voice...")
-        audio_file = uploaded_file.read()
-        audio_bytes = BytesIO(audio_file)
-        transcription = transcribe_voice(audio_bytes)
-        if transcription:
-            st.write(f"Transcription: {transcription}")
-            # Generate text using GPT-3
-            st.write("Generating text...")
-            text = generate_text(prompt + " " + transcription)
-            if text:
-                st.write(f"Generated Text: {text}")
-            else:
-                st.error("Failed to generate text.")
-        else:
-            st.error("Failed to transcribe voice.")
-    else:
-        st.warning("Please upload an audio file and enter a prompt for text generation.")
+if __name__ == "__main__":
+    main()
